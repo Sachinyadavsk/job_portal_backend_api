@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
 const app = express();
 
 import dotenv from 'dotenv';
@@ -28,12 +29,20 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
-app.use("/home", (req, res) => {
-    return res.status(200).json({
-        message: "testing to backend url",
-        success: "true"
-    })
-})
+// fix __dirname
+import { fileURLToPath } from "url";
+
+import webRoutes from "./routes/web.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// view engine setup
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// routes
+app.use("/", webRoutes);
+
 app.listen(PORT, () => {
     connectDB();
     console.log(`Server running at port ${PORT}`)
