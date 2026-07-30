@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Portal</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<!-- Navbar -->
+<nav class="bg-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">JobPortal</h1>
+    <div class="space-x-6">
+        <a href="#" class="text-gray-700 hover:text-blue-500">Home</a>
+        <a href="#" class="text-gray-700 hover:text-blue-500">About</a>
+        <a href="#" class="text-gray-700 hover:text-blue-500">Contact</a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="bg-blue-50 py-20 text-center">
+    <h2 class="text-4xl font-bold text-gray-800">
+        Find Your Dream Job Easily
+    </h2>
+    <p class="mt-4 text-gray-600">
+        Search opportunities across companies, roles, and locations
+    </p>
+
+    <!-- Search Box -->
+    <div class="mt-8 flex flex-col md:flex-row justify-center items-center gap-4 px-4">
+
+        <input type="text" placeholder="Job title (e.g. Developer)"
+            class="w-full md:w-1/3 p-3 border rounded-lg outline-none">
+
+        <input type="text" placeholder="Location (e.g. Delhi)"
+            class="w-full md:w-1/4 p-3 border rounded-lg outline-none">
+
+        <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            Search Jobs
+        </button>
+
+    </div>
+</section>
+
+<!-- Info Section -->
+<section class="max-w-6xl mx-auto py-16 px-6 text-center">
+    <h3 class="text-2xl font-bold mb-10">Why Use Our Platform?</h3>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+        <div class="bg-white p-6 rounded-xl shadow">
+            <h4 class="text-xl font-semibold mb-2">Fast Search</h4>
+            <p class="text-gray-600">
+                Quickly find jobs that match your skills and interests.
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+            <h4 class="text-xl font-semibold mb-2">Verified Companies</h4>
+            <p class="text-gray-600">
+                Apply to trusted and verified employers only.
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+            <h4 class="text-xl font-semibold mb-2">Easy Apply</h4>
+            <p class="text-gray-600">
+                Apply for jobs in just a few clicks without hassle.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white text-center p-4">
+    <p>© 2026 JobPortal. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
