@@ -20,12 +20,17 @@ app.use(express.urlencoded({ extended: true }));
 // serve uploaded images
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(cookieParser());
-const corsOptions = {
-    origin: "https://job-portal-frontend-navy-six.vercel.app",
-    credentials: true
-}
 
-app.use(cors(corsOptions));
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "https://job-portal-frontend-navy-six.vercel.app",
+        ],
+        credentials: true,
+    })
+);
+
 const PORT = process.env.PORT || 3000;
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);
