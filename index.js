@@ -24,7 +24,7 @@ app.use(cookieParser());
 const corsOptions = {
   origin: [
     "http://localhost:5173",
-    "https://job-portal-frontend-navy-six.vercel.app",
+    "https://job-portal-idea.vercel.app",
   ],
   credentials: true,
 };
