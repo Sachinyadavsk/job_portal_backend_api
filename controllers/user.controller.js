@@ -51,8 +51,6 @@ const getPublicId = (url) => {
     }
 };
 
-
-
 // ================= REGISTER =================
 export const register = async (req, res) => {
     try {
@@ -107,72 +105,78 @@ export const register = async (req, res) => {
     }
 };
 
-
-
 // ================= LOGIN =================
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
 
+        // Validate input
         if (!email || !password || !role) {
             return res.status(400).json({
-                message: "Missing credentials",
-                success: false
+                status: "error",
+                message: "Email, Password and Role are required"
             });
         }
 
+        // Find user
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({
-                message: "Invalid email or password",
-                success: false
+            return res.status(401).json({
+                status: "error",
+                message: "Invalid email or password"
             });
         }
 
+        // Check role
+        if (user.role !== role) {
+            return res.status(403).json({
+                status: "error",
+                message: "Invalid role for this account"
+            });
+        }
+
+        // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({
-                message: "Invalid email or password",
-                success: false
+            return res.status(401).json({
+                status: "error",
+                message: "Invalid email or password"
             });
         }
 
-        if (user.role !== role) {
-            return res.status(400).json({
-                message: "Invalid role",
-                success: false
-            });
-        }
-
+        // Generate JWT Token
         const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
+            {
+                id: user._id,
+                userId: user._id,
+                email: user.email,
+                role: user.role
+            },
+            process.env.JWT_SECRET || "mysecretkey",
+            {
+                expiresIn: "7d"
+            }
         );
 
-        return res
-            .status(200)
-            .cookie("token", token, {
-                maxAge: 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                sameSite: "strict"
-            })
-            .json({
-                message: `Welcome ${user.fullname}`,
-                success: true,
-                user
-            });
+        return res.status(200).json({
+            status: "success",
+            message: "Login successful",
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
 
     } catch (error) {
-        console.error("Login Error:", error);
         return res.status(500).json({
-            message: "Internal server error",
-            success: false
+            status: "error",
+            message: error.message
         });
     }
 };
-
-
 
 // ================= LOGOUT =================
 export const logout = async (req, res) => {
@@ -229,8 +233,15 @@ export const deleteUserById = async (req, res) => {
 export const updateProfileimage = async (req, res) => {
     // console.log("hello");
     try {
-        const { id } = req.params;
-        const user = await User.findById(id);
+        const userId = req.user.userId;
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User not authenticated"
+            });
+        }
+
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -238,6 +249,13 @@ export const updateProfileimage = async (req, res) => {
             });
         }
         if (!user.profile) user.profile = {};
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Profile image is required"
+            });
+        }
         // ✅ Image Update Logic
         if (req.file) {
             // delete old image
@@ -270,11 +288,18 @@ export const updateProfileimage = async (req, res) => {
 
 // ================= UPDATE PROFILE =================
 export const updateProfile = async (req, res) => {
-    // console.log("hello");
+
     try {
-        const { id } = req.params;
-        const { fullname, email, phoneNumber, bio } = req.body;
-        const user = await User.findById(id);
+        const userId = req.user.userId;
+        const { fullname, email, phoneNumber, bio, location, jobTitle, experience } = req.body;
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User not authenticated"
+            });
+        }
+
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -295,17 +320,38 @@ export const updateProfile = async (req, res) => {
             skills = [];
         }
 
+
         // ================= RESUME UPLOAD =================
         if (req.files?.resume?.[0]) {
             const file = req.files.resume[0];
+            // console.log("Resume file:", file);
+
+            // PDF only
+            if (file.mimetype !== "application/pdf") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Only PDF files are allowed"
+                });
+            }
+
+            // 5MB maximum
+            if (file.size > 5 * 1024 * 1024) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Resume must be less than 5MB"
+                });
+            }
 
             // delete old resume
             if (user.profile.resume) {
                 const publicId = getPublicId(user.profile.resume);
                 if (publicId) {
-                    await cloudinary.uploader.destroy(publicId, {
-                        resource_type: "raw"
-                    });
+                    await cloudinary.uploader.destroy(
+                        publicId,
+                        {
+                            resource_type: "raw"
+                        }
+                    );
                 }
             }
 
@@ -317,6 +363,9 @@ export const updateProfile = async (req, res) => {
         user.fullname = fullname || user.fullname;
         user.email = email || user.email;
         user.phoneNumber = phoneNumber || user.phoneNumber;
+        user.location = location || user.location;
+        user.jobTitle = jobTitle || user.jobTitle;
+        user.experience = experience || user.experience;
         user.profile.bio = bio || user.profile.bio;
         user.profile.skills = skills;
         await user.save();
@@ -386,3 +435,49 @@ export const getByIdUsers = async (req, res) => {
         });
     }
 }
+
+export const removeResume = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (!user.profile?.resume) {
+            return res.status(404).json({
+                success: false,
+                message: "Resume not found"
+            });
+        }
+
+        // Delete resume from Cloudinary
+        const publicId = getPublicId(user.profile.resume);
+        if (publicId) {
+            await cloudinary.uploader.destroy(
+                publicId,
+                {
+                    resource_type: "raw"
+                }
+            );
+        }
+
+        user.profile.resume = "";
+        user.profile.resumeOriginalName = "";
+        await user.save();
+        return res.status(200).json({
+            success: true,
+            message: "Resume removed successfully",
+            user
+        });
+    } catch (error) {
+        console.error("Remove Resume Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};

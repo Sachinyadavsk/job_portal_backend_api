@@ -23,6 +23,18 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['student', 'recruiter']
     },
+    location: {
+        type: String,
+        default: ""
+    },
+    jobTitle: {
+        type: String,
+        default: ""
+    },
+    experience: {
+        type: String,
+        default: ""
+    },
     profile: {
         bio: { type: String },
         skills: [{ type: String }],
