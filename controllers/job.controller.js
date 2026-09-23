@@ -71,12 +71,39 @@ export const getAllJobs = async (req, res) => {
     }
 }
 
+// website 
+export const getJobDetailsById = async (req, res) => {
+    try {
+        const jobId = req.params.id;
+        const job = await Job.findById(jobId).populate({
+            path: "company"
+        });
+        if (!job) {
+            return res.status(404).json({
+                message: "Job not found",
+                success: false
+            })
+        }
+        return res.status(200).json({
+            message: "Job get details by Job Id successfully",
+            job,
+            success: true
+        })
+    } catch (error) {
+        console.error("Error in getJobById controller:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        })
+    }
+}
+
 // students get job by id, also get company details in the same response using populate method of mongoose.
 export const getJobById = async (req, res) => {
     try {
         const jobId = req.params.id;
         const job = await Job.findById(jobId).populate({
-            path:"applications"
+            path: "applications"
         });
         if (!job) {
             return res.status(404).json({
@@ -102,7 +129,7 @@ export const getJobById = async (req, res) => {
 
 // update job by id
 export const updateJob = async (req, res) => {
-    
+
     try {
         const { id } = req.params;
 

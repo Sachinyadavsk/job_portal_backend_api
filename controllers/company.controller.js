@@ -1,4 +1,5 @@
 import Company from "../models/company.model.js";
+import Job from "../models/job.model.js";
 
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
@@ -168,6 +169,86 @@ export const updateCompany = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
+        });
+    }
+};
+
+// student visit company list and details
+export const getVisitCompany = async (req, res) => {
+    try {
+        const companies = await Company.find();
+        if (!companies || companies.length === 0) {
+            return res.status(404).json({
+                message: "Company not found",
+                success: false
+            })
+        }
+        return res.status(200).json({
+            message: "Company details fetched successfully",
+            success: true,
+            companies
+        })
+
+
+    } catch (error) {
+        console.error("Error in getCompany controller:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        })
+    }
+}
+
+export const getVisitCompanyById = async (req, res) => {
+    try {
+        const companyId = req.params.id;
+        const company = await Company.findById(companyId);
+        if (!company) {
+            return res.status(404).json({
+                message: "Company not found",
+                success: false
+            })
+        }
+        return res.status(200).json({
+            message: "Company details fetched successfully",
+            success: true,
+            company
+        })
+    } catch (error) {
+        console.error("Error in getCompanyById controller:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        })
+    }
+}
+
+// company Byid according  get total jobs list
+export const getCompanyJobById = async (req, res) => {
+    try {
+        const companyId = req.params.id;
+        const jobs = await Job.find({
+            company: companyId
+        }).populate("company");
+
+        if (!jobs || jobs.length === 0) {
+            return res.status(404).json({
+                message: "No jobs found for this company",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Company jobs fetched successfully",
+            success: true,
+            jobs
+        });
+
+    } catch (error) {
+        console.error("Error in get Company JobBy Id controller:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
         });
     }
 };
