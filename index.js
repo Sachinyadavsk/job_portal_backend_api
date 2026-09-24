@@ -27,7 +27,8 @@ app.use(express.urlencoded({
 
 app.use(
   cors({
-    origin: "https://job-idea.vercel.app",
+    // origin: "https://job-idea.vercel.app",
+    origin: "http://localhost:3000",
   })
 );
 
